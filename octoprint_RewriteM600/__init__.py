@@ -16,7 +16,7 @@ class Rewritem600Plugin(octoprint.plugin.SettingsPlugin,
 						octoprint.plugin.TemplatePlugin):
 	def rewrite_m600(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
 		if gcode and gcode == "M600":
-			self._plugin_manager.send_plugin_message(self._identifier, dict(type="popup", msg="Filament Change"))
+			self._plugin_manager.send_plugin_message(self._identifier, dict(type="popup", msg="Please change the filament and resume the print"))
 			comm_instance.setPause(True)
 			cmd = [("M117 Filament Change",),"G91","M83", "G1 Z+5 E-0.8 F4500", "M82", "G90", "G1 X0 Y0"]
 		return cmd
