@@ -32,9 +32,8 @@ class Rewritem600Plugin(octoprint.plugin.SettingsPlugin,
         comm_instance.setPause(False)
         return 
 	##~~ SettingsPlugin mixin
-
 	def get_settings_defaults(self):
-		return dict(
+		return dict(url="https://en.wikipedia.org/wiki/Hello_world"
 			# put your plugin's default settings here
 		)
 
