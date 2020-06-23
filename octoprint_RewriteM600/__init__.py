@@ -12,25 +12,26 @@ from __future__ import absolute_import
 import octoprint.plugin
 
 class Rewritem600Plugin(octoprint.plugin.SettingsPlugin,
-                        octoprint.plugin.AssetPlugin,
-                        octoprint.plugin.TemplatePlugin):
-    def rewrite_m600(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
-        if gcode and gcode == "M600":
-            self._plugin_manager.send_plugin_message(self._identifier, dict(type="popup", msg="Filament Change"))
-            comm_instance.setPause(True)
-            cmd = [("M117 Filament Change",),"G91","M83", "G1 Z+5 E-0.8 F4500", "M82", "G90", "G1 X0 Y0"]
-        return cmd
+						octoprint.plugin.AssetPlugin,
+						octoprint.plugin.TemplatePlugin):
+	def rewrite_m600(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
+		if gcode and gcode == "M600":
+			self._plugin_manager.send_plugin_message(self._identifier, dict(type="popup", msg="Filament Change"))
+			comm_instance.setPause(True)
+			cmd = [("M117 Filament Change",),"G91","M83", "G1 Z+5 E-0.8 F4500", "M82", "G90", "G1 X0 Y0"]
+		return cmd
 
-    def after_resume(self, comm_instance, phase, cmd, parameters, tags=None, *args, **kwargs):
-        if cmd and cmd == "resume":
-            if(comm_instance.pause_position.x):
-                cmd = []
-                cmd =["M83","G1 E-0.8 F4500", "G1 E0.8 F4500", "G1 E0.8 F4500", "M82", "G90", "G92 E"+comm_instance.pause_position.e, "M83", "G1 X"+comm_instance.pause_position.x+" Y"+comm_instance.pause_position.y+" Z"+comm_instance.pause_position.z+" F4500"]
-                if(comm_instance.pause_position.f):
-                    cmd.append("G1 F"+comm_instance.pause_position.f)
-                comm_instance.commands(cmd)
-        comm_instance.setPause(False)
-        return 
+	def after_resume(self, comm_instance, phase, cmd, parameters, tags=None, *args, **kwargs):
+		if cmd and cmd == "resume":
+			if(comm_instance.pause_position.x):
+				cmd = []
+				cmd =["M83","G1 E-0.8 F4500", "G1 E0.8 F4500", "G1 E0.8 F4500", "M82", "G90", "G92 E"+comm_instance.pause_position.e, "M83", "G1 X"+comm_instance.pause_position.x+" Y"+comm_instance.pause_position.y+" Z"+comm_instance.pause_position.z+" F4500"]
+				if(comm_instance.pause_position.f):
+					cmd.append("G1 F" + comm_instance.pause_position.f)
+				comm_instance.commands(cmd)
+		comm_instance.setPause(False)
+		return
+		
 	##~~ SettingsPlugin mixin
 	def get_settings_defaults(self):
 		return dict(url="https://en.wikipedia.org/wiki/Hello_world"
@@ -90,7 +91,7 @@ def __plugin_load__():
 	global __plugin_hooks__
 	__plugin_hooks__ = {
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
-        "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.rewrite_m600,
-        "octoprint.comm.protocol.atcommand.queuing": __plugin_implementation__.after_resume,
+		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.rewrite_m600,
+		"octoprint.comm.protocol.atcommand.queuing": __plugin_implementation__.after_resume,
 	}
 
