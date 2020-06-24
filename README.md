@@ -20,3 +20,6 @@ Copy or manually using this URL:
 ## Screenshots
 ![Screenshot](https://github.com/wgcv/plugins.octoprint.org/raw/gh-pages/assets/img/plugins/RewriteM600/M600-in-action.png
 )
+
+## Support
+You can help this project reporting issues, making PR or Sponsor it [PayPal](https://paypal.me/wgcvl).
