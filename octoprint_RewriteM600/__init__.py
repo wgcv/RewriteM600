@@ -11,9 +11,7 @@ from __future__ import absolute_import
 
 import octoprint.plugin
 
-class Rewritem600Plugin(octoprint.plugin.SettingsPlugin,
-						octoprint.plugin.AssetPlugin,
-						octoprint.plugin.TemplatePlugin):
+class Rewritem600Plugin(octoprint.plugin.AssetPlugin, octoprint.plugin.TemplatePlugin):
 	def rewrite_m600(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
 		if gcode and gcode == "M600":
 			self._plugin_manager.send_plugin_message(self._identifier, dict(type="popup", msg="Please change the filament and resume the print"))
@@ -31,12 +29,6 @@ class Rewritem600Plugin(octoprint.plugin.SettingsPlugin,
 				comm_instance.commands(cmd)
 		comm_instance.setPause(False)
 		return
-		
-	##~~ SettingsPlugin mixin
-	def get_settings_defaults(self):
-		return dict(url="https://en.wikipedia.org/wiki/Hello_world"
-			# put your plugin's default settings here
-		)
 
 	##~~ AssetPlugin mixin
 
