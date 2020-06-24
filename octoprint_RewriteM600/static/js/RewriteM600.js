@@ -14,6 +14,9 @@ $(function() {
 
         // TODO: Implement your plugin's view model here.
         self.onDataUpdaterPluginMessage = function(plugin, data) {
+            if (plugin !== "RewriteM600") {
+				return;
+			}
 			if(data.type == "popup") {
 				console.log(data.msg);
 					new PNotify({
