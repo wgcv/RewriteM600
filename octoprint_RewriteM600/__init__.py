@@ -35,7 +35,7 @@ class Rewritem600Plugin(octoprint.plugin.AssetPlugin, octoprint.plugin.TemplateP
 	def get_template_configs(self):
 		return [
 			dict(type="navbar", custom_bindings=False),
-			dict(type="settings", custom_bindings=False)
+			dict(type="settings", custom_bindings=True)
 		]
 	##~~ AssetPlugin mixin
 
