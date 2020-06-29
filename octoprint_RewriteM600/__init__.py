@@ -27,7 +27,7 @@ class Rewritem600Plugin(octoprint.plugin.AssetPlugin, octoprint.plugin.TemplateP
 				if(comm_instance.pause_position.f):
 					cmd.append("G1 F" + comm_instance.pause_position.f)
 				comm_instance.commands(cmd)
-		comm_instance.setPause(False)
+			comm_instance.setPause(False)
 		return
 	def get_settings_defaults(self):
 		return dict(zDistance=80)
