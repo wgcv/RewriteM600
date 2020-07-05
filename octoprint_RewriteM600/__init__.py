@@ -23,9 +23,9 @@ class Rewritem600Plugin(octoprint.plugin.AssetPlugin, octoprint.plugin.TemplateP
 		if cmd and cmd == "resume":
 			if(comm_instance.pause_position.x):
 				cmd = []
-				cmd =["M83","G1 E-0.8 F4500", "G1 E0.8 F4500", "G1 E0.8 F4500", "M82", "G90", "G92 E"+comm_instance.pause_position.e, "M83", "G1 X"+comm_instance.pause_position.x+" Y"+comm_instance.pause_position.y+" Z"+comm_instance.pause_position.z+" F4500"]
+				cmd =["M83","G1 E-0.8 F4500", "G1 E0.8 F4500", "G1 E0.8 F4500", "M82", "G90", "G92 E"+str(comm_instance.pause_position.e), "M83", "G1 X"+str(comm_instance.pause_position.x+)" Y"+str(comm_instance.pause_position.y)+" Z"+str(comm_instance.pause_position.z)+" F4500"]
 				if(comm_instance.pause_position.f):
-					cmd.append("G1 F" + comm_instance.pause_position.f)
+					cmd.append("G1 F" + str(comm_instance.pause_position.f))
 				comm_instance.commands(cmd)
 			comm_instance.setPause(False)
 		return
