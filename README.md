@@ -22,4 +22,4 @@ Copy or manually using this URL:
 )
 
 ## Support
-You can help this project reporting issues, making PR or Sponsor it [PayPal](https://paypal.me/wgcvl).
+You can help this project reporting issues, making PR or Sponsor it [PayPal](https://paypal.me/wgcv).
