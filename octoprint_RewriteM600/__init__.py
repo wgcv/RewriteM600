@@ -14,95 +14,95 @@ import octoprint.plugin
 
 
 class Rewritem600Plugin(octoprint.plugin.AssetPlugin, octoprint.plugin.TemplatePlugin, octoprint.plugin.SettingsPlugin):
-    pattern = re.compile('X:([0-9.]+) Y:([0-9.]+) Z:([0-9.]+) E:([0-9.]+) Count X:([0-9]+) Y:([0-9]+) Z:([0-9]+)')
-    cached_position = {"x": "NOT SET", "y": "NOT SET", "z": "NOT SET", "e": "NOT SET"}
-    listening = False
+	pattern = re.compile('X:([0-9.]+) Y:([0-9.]+) Z:([0-9.]+) E:([0-9.]+) Count X:([0-9]+) Y:([0-9]+) Z:([0-9]+)')
+	cached_position = {"x": "NOT SET", "y": "NOT SET", "z": "NOT SET", "e": "NOT SET"}
+	listening = False
 
-    def rewrite_m600(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
-        if gcode and gcode == "M600":
-            self._plugin_manager.send_plugin_message(self._identifier,
-                                                     dict(type = "popup",
-                                                          msg = "Please change the filament and resume the print"))
-            comm_instance.setPause(True)
-            self.listening = True  # We need to listen to the first result of M114, so we can cache position
-            cmd = ["M114", ("M117 Filament Change",), "G91", "M83",
-                   "G1 Z+" + str(self._settings.get(["zDistance"])) + " E-0.8 F4500", "M82", "G90", "G1 X0 Y0"]
+	def rewrite_m600(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
+		if gcode and gcode == "M600":
+			self._plugin_manager.send_plugin_message(self._identifier,
+			                                         dict(type = "popup",
+			                                              msg = "Please change the filament and resume the print"))
+			comm_instance.setPause(True)
+			self.listening = True  # We need to listen to the first result of M114, so we can cache position
+			cmd = ["M114", ("M117 Filament Change",), "G91", "M83",
+			       "G1 Z+" + str(self._settings.get(["zDistance"])) + " E-0.8 F4500", "M82", "G90", "G1 X0 Y0"]
 
-        return cmd
+		return cmd
 
-    def detect_position(self, comm_instance, line, *args, **kwargs):
-        match = self.pattern.match(line)
-        if match is not None and self.listening:
-            self.cached_position["x"] = match.group(1)
-            self.cached_position["y"] = match.group(2)
-            self.cached_position["z"] = match.group(3)
-            self.cached_position["e"] = match.group(3)
-            self.listening = False  # Reset so we don't listen to the update called on print pause
-        return line
+	def detect_position(self, comm_instance, line, *args, **kwargs):
+		match = self.pattern.match(line)
+		if match is not None and self.listening:
+			self.cached_position["x"] = match.group(1)
+			self.cached_position["y"] = match.group(2)
+			self.cached_position["z"] = match.group(3)
+			self.cached_position["e"] = match.group(3)
+			self.listening = False  # Reset so we don't listen to the update called on print pause
+		return line
 
-    def after_resume(self, comm_instance, phase, cmd, parameters, tags = None, *args, **kwargs):
-        if cmd and cmd == "resume":
-            if self.cached_position["x"] is not "NOT SET":  # use our cached position
-                cmd = [
-                    # We'll assume that the user manually inserted and purged the new filament, so no new extrusion
-                    # is required here
-                    # "M83", "G1 E-0.8 F4500", "G1 E0.8 F4500", "G1 E0.8 F4500",
-                    "M82", "G90",  # Reset to absolute positioning
-                    # I don't think we really need the extrusion to be set here?
-                    # The gcode that follows will set it itself.
-                    # "G92 E" + str(self.cached_position["e"]),
-                    "M83",  # Reset our extruder mode to absolute
-                    # Reset our position to pre-M600 positions
-                    "G1 X" + str(self.cached_position["x"]) +
-                    " Y" + str(self.cached_position["y"]) +
-                    " Z" + str(self.cached_position["z"]) + " F4500"]
-                if comm_instance.pause_position.f:
-                    cmd.append("G1 F" + str(comm_instance.pause_position.f))
-            comm_instance.commands(cmd)
-            comm_instance.setPause(False)
-        return
+	def after_resume(self, comm_instance, phase, cmd, parameters, tags = None, *args, **kwargs):
+		if cmd and cmd == "resume":
+			if self.cached_position["x"] is not "NOT SET":  # use our cached position
+				cmd = [
+					# We'll assume that the user manually inserted and purged the new filament, so no new extrusion
+					# is required here
+					# "M83", "G1 E-0.8 F4500", "G1 E0.8 F4500", "G1 E0.8 F4500",
+					"M82", "G90",  # Reset to absolute positioning
+					# I don't think we really need the extrusion to be set here?
+					# The gcode that follows will set it itself.
+					# "G92 E" + str(self.cached_position["e"]),
+					"M83",  # Reset our extruder mode to absolute
+					# Reset our position to pre-M600 positions
+					"G1 X" + str(self.cached_position["x"]) +
+					" Y" + str(self.cached_position["y"]) +
+					" Z" + str(self.cached_position["z"]) + " F4500"]
+				if comm_instance.pause_position.f:
+					cmd.append("G1 F" + str(comm_instance.pause_position.f))
+			comm_instance.commands(cmd)
+			comm_instance.setPause(False)
+		return
 
-    def get_settings_defaults(self):
-        return dict(zDistance = 80)
+	def get_settings_defaults(self):
+		return dict(zDistance = 80)
 
-    def get_template_configs(self):
-        return [
-            dict(type = "navbar", custom_bindings = False),
-            dict(type = "settings", custom_bindings = False)
-        ]
+	def get_template_configs(self):
+		return [
+			dict(type = "navbar", custom_bindings = False),
+			dict(type = "settings", custom_bindings = False)
+		]
 
-    ##~~ AssetPlugin mixin
+	##~~ AssetPlugin mixin
 
-    def get_assets(self):
-        # Define your plugin's asset files to automatically include in the
-        # core UI here.
-        return dict(
-            js = ["js/RewriteM600.js"],
-            css = ["css/RewriteM600.css"],
-            less = ["less/RewriteM600.less"]
-        )
+	def get_assets(self):
+		# Define your plugin's asset files to automatically include in the
+		# core UI here.
+		return dict(
+			js = ["js/RewriteM600.js"],
+			css = ["css/RewriteM600.css"],
+			less = ["less/RewriteM600.less"]
+		)
 
-    ##~~ Softwareupdate hook
+	##~~ Softwareupdate hook
 
-    def get_update_information(self):
-        # Define the configuration for your plugin to use with the Software Update
-        # Plugin here. See https://docs.octoprint.org/en/master/bundledplugins/softwareupdate.html
-        # for details.
-        return dict(
-            RewriteM600 = dict(
-                displayName = "Rewritem600 Plugin",
-                displayVersion = self._plugin_version,
+	def get_update_information(self):
+		# Define the configuration for your plugin to use with the Software Update
+		# Plugin here. See https://docs.octoprint.org/en/master/bundledplugins/softwareupdate.html
+		# for details.
+		return dict(
+			RewriteM600 = dict(
+				displayName = "Rewritem600 Plugin",
+				displayVersion = self._plugin_version,
 
-                # version check: github repository
-                type = "github_release",
-                user = "wgcv",
-                repo = "RewriteM600",
-                current = self._plugin_version,
+				# version check: github repository
+				type = "github_release",
+				user = "wgcv",
+				repo = "RewriteM600",
+				current = self._plugin_version,
 
-                # update method: pip
-                pip = "https://github.com/wgcv/RewriteM600/archive/{target_version}.zip"
-            )
-        )
+				# update method: pip
+				pip = "https://github.com/wgcv/RewriteM600/archive/{target_version}.zip"
+			)
+		)
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
@@ -119,13 +119,13 @@ __plugin_pythoncompat__ = ">=2.7,<4"  # python 2 and 3
 
 
 def __plugin_load__():
-    global __plugin_implementation__
-    __plugin_implementation__ = Rewritem600Plugin()
+	global __plugin_implementation__
+	__plugin_implementation__ = Rewritem600Plugin()
 
-    global __plugin_hooks__
-    __plugin_hooks__ = {
-        "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
-        "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.rewrite_m600,
-        "octoprint.comm.protocol.atcommand.queuing": __plugin_implementation__.after_resume,
-        "octoprint.comm.protocol.gcode.received": __plugin_implementation__.detect_position,
-    }
+	global __plugin_hooks__
+	__plugin_hooks__ = {
+		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
+		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.rewrite_m600,
+		"octoprint.comm.protocol.atcommand.queuing": __plugin_implementation__.after_resume,
+		"octoprint.comm.protocol.gcode.received": __plugin_implementation__.detect_position,
+	}
