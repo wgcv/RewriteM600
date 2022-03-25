@@ -7,11 +7,11 @@
 plugin_identifier = "RewriteM600"
 
 # The plugin's python package, should be "octoprint_<plugin identifier>", has to be unique
-plugin_package = "octoprint_RewriteM600_Travja"
+plugin_package = "octoprint_RewriteM600"
 
 # The plugin's human readable name. Can be overwritten within OctoPrint's internal data via __plugin_name__ in the
 # plugin module
-plugin_name = "RewriteM600_Travja"
+plugin_name = "RewriteM600"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
 plugin_version = "1.0.5"
@@ -21,7 +21,7 @@ plugin_version = "1.0.5"
 plugin_description = """Implement M600 for pinters that can't support M600 by default (TFT with out marlin mode support, like Artilelry X1 and Genius)"""
 
 # The plugin's author. Can be overwritten within OctoPrint's internal data via __plugin_author__ in the plugin module
-plugin_author = "Gustavo Cevallos/Travja"
+plugin_author = "Gustavo Cevallos"
 
 # The plugin's author's mail address.
 plugin_author_email = "gstavocevallos@gmail.com"
@@ -33,7 +33,7 @@ plugin_url = "https://github.com/Travja/RewriteM600"
 plugin_license = "MIT"
 
 # Any additional requirements besides OctoPrint should be listed here
-plugin_requires = ['re']
+plugin_requires = []
 
 ### --------------------------------------------------------------------------------------------------------------------
 ### More advanced options that you usually shouldn't have to touch follow after this point

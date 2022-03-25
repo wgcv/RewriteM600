@@ -15,45 +15,48 @@ import octoprint.plugin
 
 class Rewritem600Plugin(octoprint.plugin.AssetPlugin, octoprint.plugin.TemplatePlugin, octoprint.plugin.SettingsPlugin):
     pattern = re.compile('X:([0-9.]+) Y:([0-9.]+) Z:([0-9.]+) E:([0-9.]+) Count X:([0-9]+) Y:([0-9]+) Z:([0-9]+)')
-    cached_position = {"x": 0, "y": 0, "z": 0}
+    cached_position = {"x": "NOT SET", "y": "NOT SET", "z": "NOT SET", "e": "NOT SET"}
+    listening = False
 
     def rewrite_m600(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         if gcode and gcode == "M600":
-            self._plugin_manager.send_plugin_message(self._identifier, dict(type = "popup",
-                                                                            msg = "Please change the filament and resume the print"))
+            self._plugin_manager.send_plugin_message(self._identifier,
+                                                     dict(type = "popup",
+                                                          msg = "Please change the filament and resume the print"))
             comm_instance.setPause(True)
+            self.listening = True  # We need to listen to the first result of M114, so we can cache position
             cmd = ["M114", ("M117 Filament Change",), "G91", "M83",
                    "G1 Z+" + str(self._settings.get(["zDistance"])) + " E-0.8 F4500", "M82", "G90", "G1 X0 Y0"]
+
         return cmd
 
     def detect_position(self, comm_instance, line, *args, **kwargs):
         match = self.pattern.match(line)
-        if match is not None:
+        if match is not None and self.listening:
             self.cached_position["x"] = match.group(1)
             self.cached_position["y"] = match.group(2)
             self.cached_position["z"] = match.group(3)
             self.cached_position["e"] = match.group(3)
-            return line
+            self.listening = False  # Reset so we don't listen to the update called on print pause
         return line
 
     def after_resume(self, comm_instance, phase, cmd, parameters, tags = None, *args, **kwargs):
         if cmd and cmd == "resume":
-            if (comm_instance.pause_position.x):
-                cmd = ["M83", "G1 E-0.8 F4500", "G1 E0.8 F4500", "G1 E0.8 F4500", "M82", "G90",
-                       "G92 E" + str(comm_instance.pause_position.e), "M83",
-                       "G1 X" + str(comm_instance.pause_position.x) +
-                       " Y" + str(comm_instance.pause_position.y) +
-                       " Z" + str(comm_instance.pause_position.z) + " F4500"]
-                if (comm_instance.pause_position.f):
-                    cmd.append("G1 F" + str(comm_instance.pause_position.f))
-            else:  # use our cached position
-                self.cached_position["x"]
-                cmd = ["M83", "G1 E-0.8 F4500", "G1 E0.8 F4500", "G1 E0.8 F4500", "M82", "G90",
-                       "G92 E" + str(self.cached_position["e"]), "M83",
-                       "G1 X" + str(self.cached_position["x"]) +
-                       " Y" + str(self.cached_position["y"]) +
-                       " Z" + str(self.cached_position["z"]) + " F4500"]
-                if (comm_instance.pause_position.f):
+            if self.cached_position["x"] is not "NOT SET":  # use our cached position
+                cmd = [
+                    # We'll assume that the user manually inserted and purged the new filament, so no new extrusion
+                    # is required here
+                    # "M83", "G1 E-0.8 F4500", "G1 E0.8 F4500", "G1 E0.8 F4500",
+                    "M82", "G90",  # Reset to absolute positioning
+                    # I don't think we really need the extrusion to be set here?
+                    # The gcode that follows will set it itself.
+                    # "G92 E" + str(self.cached_position["e"]),
+                    "M83",  # Reset our extruder mode to absolute
+                    # Reset our position to pre-M600 positions
+                    "G1 X" + str(self.cached_position["x"]) +
+                    " Y" + str(self.cached_position["y"]) +
+                    " Z" + str(self.cached_position["z"]) + " F4500"]
+                if comm_instance.pause_position.f:
                     cmd.append("G1 F" + str(comm_instance.pause_position.f))
             comm_instance.commands(cmd)
             comm_instance.setPause(False)
