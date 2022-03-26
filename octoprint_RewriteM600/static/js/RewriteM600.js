@@ -23,7 +23,7 @@ $(function() {
 						title: 'M600',
 						text: data.msg,
 						type: "info",
-						hide: false
+						hide: true
 						});
 				}
             }
