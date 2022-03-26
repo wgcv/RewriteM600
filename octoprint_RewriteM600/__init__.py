@@ -29,7 +29,9 @@ class Rewritem600Plugin(octoprint.plugin.AssetPlugin, octoprint.plugin.TemplateP
 			self._logger.info(self.cached_position)
 			self.waiting = True
 		elif gcode and gcode == "M601":
-			self._plugin_manager.send_plugin_message(self._identifier, dict(type="popup", msg = self.cached_position))
+			self._plugin_manager.send_plugin_message(self._identifier, dict(type = "popup", msg = "Resuming to location at X:" +
+								self.cached_position["x"] + " Y:" + self.cached_position["y"] +
+								" Z:" + self.cached_position["z"]))
 			if self.cached_position["x"] != "NOT SET":
 				cmd = [
 					# We'll assume that the user manually inserted and purged the new filament, so no new extrusion
@@ -52,7 +54,7 @@ class Rewritem600Plugin(octoprint.plugin.AssetPlugin, octoprint.plugin.TemplateP
 		return cmd
 
 	def detect_position(self, comm_instance, line, *args, **kwargs):
-		match = re.match("X:([0-9.]+) Y:([0-9.]+) Z:([0-9.]+) E:-?([0-9.]+) Count X:([0-9]+) Y:([0-9]+) Z:([0-9]+)", 0line)
+		match = re.match("X:([0-9.]+) Y:([0-9.]+) Z:([0-9.]+) E:-?([0-9.]+) Count X:([0-9]+) Y:([0-9]+) Z:([0-9]+)", line)
 		if match is not None and self.listening:
 			self.cached_position["x"] = match.group(1)
 			self.cached_position["y"] = match.group(2)
@@ -65,16 +67,15 @@ class Rewritem600Plugin(octoprint.plugin.AssetPlugin, octoprint.plugin.TemplateP
 			self._logger.info(self.cached_position)
 		return line
 
-	def after_resume(self, comm_instance, line, action, *args, **kwargs):
-		self._logger.info("Received queued command: " + action)
-		if self.waiting and cmd == "resume":
+	def after_resume(self, comm_instance, script_type, script_name, *args, **kwargs):
+		self._logger.info("Received queued command: " + script_name)
+		if self.waiting and script_name == "beforePrintResumed":
 			self._logger.info("Resuming from Filament Change")
 			self.waiting = False
 			self._plugin_manager.send_plugin_message(self._identifier, dict(type = "popup", msg = "Resuming to location at X:" +
 								self.cached_position["x"] + " Y:" + self.cached_position["y"] +
 								" Z:" + self.cached_position["z"]))
 			if self.cached_position["x"] != "NOT SET":  # use our cached position
-				tmp = cmd
 				cmd = [
 					# We'll assume that the user manually inserted and purged the new filament, so no new extrusion
 					# is required here
@@ -89,7 +90,6 @@ class Rewritem600Plugin(octoprint.plugin.AssetPlugin, octoprint.plugin.TemplateP
 					"G1 Z" + str(self.cached_position["z"]),
 					"G1 X" + str(self.cached_position["x"]) +
 					" Y" + str(self.cached_position["y"]) + " F4500"]
-				cmd.extend(tmp)
 				if comm_instance.pause_position.f:
 					cmd.append("G1 F" + str(comm_instance.pause_position.f))
 				self.cached_position = {"x": "NOT SET", "y": "NOT SET", "z": "NOT SET", "e": "NOT SET"}
@@ -161,6 +161,6 @@ def __plugin_load__():
 	__plugin_hooks__ = {
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
 		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.rewrite_m600,
-		"octoprint.comm.protocol.atcommand.queuing": __plugin_implementation__.after_resume,
+		"octoprint.comm.protocol.scripts": __plugin_implementation__.after_resume,
 		"octoprint.comm.protocol.gcode.received": __plugin_implementation__.detect_position,
 	}
