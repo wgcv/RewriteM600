@@ -25,7 +25,7 @@ class Rewritem600Plugin(octoprint.plugin.AssetPlugin, octoprint.plugin.TemplateP
 			                                              msg = "Please change the filament and resume the print"))
 			comm_instance.setPause(True)
 			self.listening = True  # We need to listen to the first result of M114, so we can cache position
-			cmd = ["M114", ("M117 Filament Change",), "G91", "M83", "G1 Z+" + str(self._settings.get(["zDistance"])) + " E-0.8 F4500", "M82", "G90", "G1 X0 Y0 F4500"]
+			cmd = ["M114", ("M117 Filament Change",), "G91", "M83", "G1 E-2 F2700", "G1 Z0.05", "G1 X5 Y5", "G1 Z+" + str(self._settings.get(["zDistance"])) + " F4500", "M82", "G90", "G1 X0 Y0 F4500"]
 			self._logger.info(self.cached_position)
 			self.waiting = True
 		elif gcode and gcode == "M601":
@@ -38,10 +38,7 @@ class Rewritem600Plugin(octoprint.plugin.AssetPlugin, octoprint.plugin.TemplateP
 					# is required here
 					# "M83", "G1 E-0.8 F4500", "G1 E0.8 F4500", "G1 E0.8 F4500",
 					"M82", "G90",  # Reset to absolute positioning
-					# I don't think we really need the extrusion to be set here?
-					# The gcode that follows will set it itself.
-					# "G92 E" + str(self.cached_position["e"]),
-					"M83",  # Reset our extruder mode to absolute
+					"G92 E" + str(self.cached_position["e"]),
 					# Reset our position to pre-M600 positions
 					"G1 Z" + str(self.cached_position["z"]),
 					"G1 X" + str(self.cached_position["x"]) +
@@ -80,12 +77,9 @@ class Rewritem600Plugin(octoprint.plugin.AssetPlugin, octoprint.plugin.TemplateP
 					# We'll assume that the user manually inserted and purged the new filament, so no new extrusion
 					# is required here
 					# "M83", "G1 E-0.8 F4500", "G1 E0.8 F4500", "G1 E0.8 F4500",
-					"M83", "G1 Z-" + str(self._settings.get(["zDistance"])) + " F4500",
+					# "M83", "G1 Z-" + str(self._settings.get(["zDistance"])) + " F4500",
 					"M82", "G90",  # Reset to absolute positioning
-					# I don't think we really need the extrusion to be set here?
-					# The gcode that follows will set it itself.
-					# "G92 E" + str(self.cached_position["e"]),
-					"M83",  # Reset our extruder mode to absolute
+					"G92 E" + str(self.cached_position["e"]),
 					# Reset our position to pre-M600 position
 					"G1 Z" + str(self.cached_position["z"]),
 					"G1 X" + str(self.cached_position["x"]) +
@@ -93,9 +87,7 @@ class Rewritem600Plugin(octoprint.plugin.AssetPlugin, octoprint.plugin.TemplateP
 				if comm_instance.pause_position.f:
 					cmd.append("G1 F" + str(comm_instance.pause_position.f))
 				self.cached_position = {"x": "NOT SET", "y": "NOT SET", "z": "NOT SET", "e": "NOT SET"}
-			comm_instance.commands(cmd)
-			comm_instance.setPause(False)
-		return
+			return cmd, None
 
 	def get_settings_defaults(self):
 		return dict(zDistance = 80)
