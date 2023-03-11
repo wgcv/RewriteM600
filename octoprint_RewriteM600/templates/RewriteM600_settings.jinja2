@@ -1,8 +1,77 @@
+<h4>Rewrite M600</h4>
+
 <form class="form-horizontal">
     <div class="control-group">
-        <label class="control-label">{{ _('Z-Distance(mm): ') }}</label>
+        <label class="control-label" for="settings-rewritem600-timeg4">{{ _('Time for G4: ') }}</label>
         <div class="controls">
-            <input type="number" class="input-block-level" data-bind="value: settings.plugins.RewriteM600.zDistance">
+			<span class="input-append">
+				<input type="number" class="input-block-level" data-bind="value: settings.plugins.RewriteM600.timeG4" id="settings-rewritem600-timeg4">
+				<span class="add-on">sec</span>
+			</span>
+			<br>
+			<small style="inline-block"><code>G4</code> is the dwell-command. It is used to make sure the <code>M114</code> (report current position) reports the latest known position.</small>
         </div>
     </div>
+	
+	<div class="control-group" title="{{ _('GCODE to execute when rewriting M600') }}">
+		<label class="control-label" for="settings-rewritem600-checkbox">{{ _('Default @pause') }}</label>
+		<div class="controls">
+			<input type="checkbox" class="inline" id="settings-rewritem600-checkbox" data-bind="checked: settings.plugins.RewriteM600.defaultPause">
+			<small style="display: inline-block;">If checked, default script <code>afterPrintPaused</code> (from GCODE Scripts) is sent to the printer. Otherwise, the gcode stated in the following textarea is used.</small>
+		</div>
+	</div>
+	<div class="control-group" title="{{ _('GCODE to execute when rewriting M600') }}">
+		<label class="control-label" for="settings-rewritem600-rewriteGcode">{{ _('GCODE for pause') }}</label>
+		<div class="controls">
+			<textarea rows="5" class="input-block-level" data-bind="disable: settings.plugins.RewriteM600.defaultPause, value: settings.plugins.RewriteM600.pauseCommand" id="settings-rewritem600-rewriteGcode"></textarea>
+		</div>
+	</div>
+	
+	<div class="control-group" title="{{ _('GCODE to execute when resuming M600') }}">
+		<label class="control-label" for="settings-rewritem600-resumeCheckbox">{{ _('Default @resume') }}</label>
+		<div class="controls">
+			<input type="checkbox" class="inline" id="settings-rewritem600-resumeCheckbox" data-bind="checked: settings.plugins.RewriteM600.defaultResume">
+			<small style="display: inline-block;">If checked, default script <code>beforePrintResumed</code> (from GCODE Scripts) is sent to the printer. Otherwise, the gcode stated in the following textarea is used.</small>
+		</div>
+	</div>
+	<div class="control-group" title="{{ _('GCODE to execute when resuming') }}">
+		<label class="control-label" for="settings-rewritem600-resume">{{ _('GCODE for resume') }}</label>
+		<div class="controls">
+			<textarea rows="5" class="input-block-level" data-bind="disable: settings.plugins.RewriteM600.defaultResume, value: settings.plugins.RewriteM600.resumeCommand" id="settings-rewritem600-resume"></textarea>
+		</div>
+	</div>
+	<div class="advanced_options">
+		<div><small><a href="#" class="muted" data-bind="toggleContent: { class: 'fa-caret-right fa-caret-down', parent: '.advanced_options', container: '.hide' }"><i class="fas fa-caret-right"></i> {{ _('Advanced options') }}</a></small></div>
+		<div class="hide">
+			<div class="control-group" title="{{ _('Regex to process position (answer M114)') }}">
+				<label class="control-label" for="settings-rewritem600-regex">{{ _('Regular Expression') }}</label>
+				<div class="controls">
+					<input type="text" class="input-block-level" data-bind="value: settings.plugins.RewriteM600.regularExpression" id="settings-rewritem600-regex">
+					<small style="display: inline-block;">Regular Expression to recognize the position as answer to <code>M114</code>.</small>
+				</div>
+			</div>
+			<div class="control-group" title="{{ _('Datagroups for RegEx') }}">
+				<span class="control-label">Match Groups</span>
+				<div class="controls">
+					<span class="input-prepend"  style="float:left;width:10%;margin-right:7%">
+						<span class="add-on">{{ _('X') }}</span>
+						<input type="number" class="input-block-level" data-bind="value: settings.plugins.RewriteM600.x" id="settings-rewritem600-x">
+					</span>
+					<span class="input-prepend"  style="float:left;width:10%;margin-right:7%">
+						<span class="add-on">{{ _('Y') }}</span>
+						<input type="number" class="input-block-level" data-bind="value: settings.plugins.RewriteM600.y" id="settings-rewritem600-y">
+					</span>
+					<span class="input-prepend"  style="float:left;width:10%;margin-right:7%">
+						<span class="add-on">{{ _('Z') }}</span>
+						<input type="number" class="input-block-level" data-bind="value: settings.plugins.RewriteM600.z" id="settings-rewritem600-z">
+					</span>
+					<span class="input-prepend"  style="float:left;width:10%;margin-right:7%">
+						<span class="add-on">{{ _('E') }}</span>
+						<input type="number" class="input-block-level" data-bind="value: settings.plugins.RewriteM600.e" id="settings-rewritem600-e">
+					</span>
+					<small style="display: block; clear:both;">Match groups for the regular expression above.</small>
+				</div>
+			</div>
+		</div>
+	</div>
 </form>

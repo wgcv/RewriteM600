@@ -14,6 +14,11 @@ Copy or manually using this URL:
 
     https://github.com/wgcv/RewriteM600/archive/master.zip
 
+## Configuration
+
+As this plugin only tries to recognize the correct pausing position as a response to the `M114`-marlin-command, it is possible to change the default behaviour.
+The plugin provides the dict `cached_position` (with members `x`, `y`, `z` and `e`) to the GCODE-Script `beforePrintResumed`. You can access them via `{{plugins.RewriteM600.cached_position.(x|y|z|e)}}`.
+
 ## Screenshots
 
 ![Screenshot](https://github.com/wgcv/plugins.octoprint.org/raw/gh-pages/assets/img/plugins/RewriteM600/M600-in-action.png
