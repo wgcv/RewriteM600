@@ -7,10 +7,20 @@
 $(function() {
     function Rewritem600ViewModel(parameters) {
         var self = this;
+		
+		self.settings = parameters[0];
+		self.defaultPause = ko.observable();
+		self.defaultResume = ko.observable();
 
         // assign the injected parameters, e.g.:
         // self.loginStateViewModel = parameters[0];
         // self.settingsViewModel = parameters[1];
+		
+		self.onBeforeBinding = function() {
+			console.log(self.settings);
+            self.defaultPause(self.settings.settings.plugins.RewriteM600.defaultPause());
+			self.defaultResume(self.settings.settings.plugins.RewriteM600.defaultResume());
+        }
 
         // TODO: Implement your plugin's view model here.
         self.onDataUpdaterPluginMessage = function(plugin, data) {
@@ -23,7 +33,7 @@ $(function() {
 						title: 'M600',
 						text: data.msg,
 						type: "info",
-						hide: false
+						hide: true
 						});
 				}
             }
@@ -36,8 +46,8 @@ $(function() {
     OCTOPRINT_VIEWMODELS.push({
         construct: Rewritem600ViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
-        dependencies: [ /* "loginStateViewModel", "settingsViewModel" */ ],
+        dependencies: [ "settingsViewModel"/* "loginStateViewModel", "settingsViewModel" */ ],
         // Elements to bind to, e.g. #settings_plugin_RewriteM600, #tab_plugin_RewriteM600, ...
-        elements: [ /* ... */ ]
+        elements: [  ]
     });
 });
