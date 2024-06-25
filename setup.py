@@ -14,11 +14,11 @@ plugin_package = "octoprint_RewriteM600"
 plugin_name = "RewriteM600"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
-plugin_version = "1.0.1"
+plugin_version = "1.0.5"
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
 # module
-plugin_description = """Implement M600 for pinters that can't support M600 by default (TFT with out marlin mode support, like Artilelry X1 and Genius)"""
+plugin_description = """Implement M600 for pinters that can't support M600 by default (TFT with out marlin mode support, like Artillery X1 and Genius)"""
 
 # The plugin's author. Can be overwritten within OctoPrint's internal data via __plugin_author__ in the plugin module
 plugin_author = "Gustavo Cevallos"
